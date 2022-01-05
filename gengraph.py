@@ -29,7 +29,7 @@ import utils.io_utils as io_utils
 # Experiment utilities
 #
 ####################################
-def perturb(graph_list, p):
+def perturb(graph_list, p, ptype='add'):
     """ Perturb the list of (sparse) graphs by adding/removing edges.
     Args:
         p: proportion of added edges based on current number of edges.
@@ -41,13 +41,35 @@ def perturb(graph_list, p):
         G = G_original.copy()
         edge_count = int(G.number_of_edges() * p)
         # randomly add the edges between a pair of nodes without an edge.
-        for _ in range(edge_count):
-            while True:
-                u = np.random.randint(0, G.number_of_nodes())
-                v = np.random.randint(0, G.number_of_nodes())
-                if (not G.has_edge(u, v)) and (u != v):
-                    break
-            G.add_edge(u, v)
+        if ptype == 'add':
+            for _ in range(edge_count):
+                while True:
+                    u = np.random.randint(0, G.number_of_nodes())
+                    v = np.random.randint(0, G.number_of_nodes())
+                    if (not G.has_edge(u, v)) and (u != v):
+                        break
+                G.add_edge(u, v)
+        
+        # randomly delete the edges between a pair of nodes without an edge.
+        if ptype == 'del':
+            for _ in range(edge_count):
+                while True:
+                    u = np.random.randint(0, G.number_of_nodes())
+                    v = np.random.randint(0, G.number_of_nodes())
+                    if (G.has_edge(u, v)) and (u != v):
+                        break
+                G.remove_edge(u, v)
+        
+        # randomly delete the edges between a pair of nodes without an edge.
+        if ptype == 'mix':
+            for _ in range(edge_count):
+                while True:
+                    u = np.random.randint(0, G.number_of_nodes())
+                    v = np.random.randint(0, G.number_of_nodes())
+                    if (u != v):
+                        break
+                G.remove_edge(u, v) if G.has_edge(u, v) else G.add_edge(u, v)
+        
         perturbed_graph_list.append(G)
     return perturbed_graph_list
 
